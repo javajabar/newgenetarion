@@ -296,27 +296,56 @@ function pickIdea(options = {}) {
 }
 
 function showIdea(idea, addToHistory = true) {
-  currentIdea = idea;
-  const source = idea.source === "gemini" ? "Gemini" : "локальная база";
+  const normalizedIdea = normalizeDisplayIdea(idea);
+  currentIdea = normalizedIdea;
+  const source = normalizedIdea.source === "gemini" ? "Gemini" : "локальная база";
   animateIdeaChange();
-  els.ideaMeta.textContent = `${idea.tags.slice(0, 3).join(" / ")} · энергия ${idea.energy}/5 · ${source}`;
-  els.ideaTitle.textContent = idea.title;
-  els.ideaText.textContent = idea.text;
-  updateIdeaImage(idea);
+  els.ideaMeta.textContent =
+    idea?.meta || `${normalizedIdea.tags.slice(0, 3).join(" / ")} · энергия ${normalizedIdea.energy}/5 · ${source}`;
+  els.ideaTitle.textContent = normalizedIdea.title;
+  els.ideaText.textContent = normalizedIdea.text;
+  updateIdeaImage(normalizedIdea);
 
   if (addToHistory) {
     state.history = [
       {
-        title: idea.title,
-        text: idea.text,
+        title: normalizedIdea.title,
+        text: normalizedIdea.text,
+        tags: normalizedIdea.tags,
+        energy: normalizedIdea.energy,
+        source: normalizedIdea.source,
         meta: els.ideaMeta.textContent,
         date: new Date().toISOString(),
       },
-      ...state.history.filter((item) => item.title !== idea.title),
+      ...state.history.filter((item) => item.title !== normalizedIdea.title),
     ].slice(0, 12);
     saveState();
     renderHistory();
   }
+}
+
+function normalizeDisplayIdea(idea) {
+  const tags = Array.isArray(idea?.tags) && idea.tags.length > 0 ? idea.tags : deriveTagsFromMeta(idea?.meta);
+
+  return {
+    title: String(idea?.title || "Необычная идея"),
+    text: String(idea?.text || "Попробуй маленький эксперимент и посмотри, что изменится."),
+    tags,
+    energy: Math.min(5, Math.max(1, Number(idea?.energy) || Number(state.energy) || 3)),
+    source: idea?.source || "local",
+  };
+}
+
+function deriveTagsFromMeta(meta) {
+  if (typeof meta !== "string" || !meta.trim()) return ["история"];
+  return meta
+    .split("·")[0]
+    .split("/")
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .slice(0, 3)
+    .concat(["история"])
+    .slice(0, 3);
 }
 
 async function updateIdeaImage(idea) {
@@ -363,7 +392,7 @@ async function fetchIdeaImage(idea) {
       body: JSON.stringify({
         title: idea.title,
         text: idea.text,
-        tags: idea.tags,
+        tags: Array.isArray(idea.tags) ? idea.tags : ["идея"],
         mood: state.mood,
       }),
     });
@@ -427,7 +456,7 @@ async function generateIdea() {
 }
 
 async function dislikeAndReplace(options = {}) {
-  const rejectedIdea = options.rejectedIdea || currentIdea;
+  const rejectedIdea = normalizeDisplayIdea(options.rejectedIdea || currentIdea);
   if (rejectedIdea && !state.disliked.includes(rejectedIdea.title)) {
     state.disliked = [...state.disliked, rejectedIdea.title].slice(-30);
   }
@@ -599,10 +628,11 @@ async function applyFeedback(type) {
   saveState();
   syncForm();
   const rejectedIdea = lastRejectedIdea || currentIdea;
+  const rejectedTags = normalizeDisplayIdea(rejectedIdea).tags;
   showIdea(
     await getIdea({
       excludeTitles: [rejectedIdea?.title, currentIdea?.title].filter(Boolean),
-      avoidTags: type === "different" && rejectedIdea ? rejectedIdea.tags : [],
+      avoidTags: type === "different" && rejectedIdea ? rejectedTags : [],
       fresh: true,
     })
   );
