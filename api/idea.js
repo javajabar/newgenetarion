@@ -99,11 +99,24 @@ function parseIdeaJson(rawText) {
     return JSON.parse(rawText);
   } catch {
     const match = rawText.match(/\{[\s\S]*\}/);
-    if (!match) {
-      throw new Error(`Gemini returned non-JSON text: ${rawText.slice(0, 160)}`);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch {
+        // Fall through to a safe idea object below.
+      }
     }
 
-    return JSON.parse(match[0]);
+    return {
+      title: "Идея от Gemini",
+      text: rawText
+        .replace(/```json|```/g, "")
+        .replace(/[{}"]/g, "")
+        .trim()
+        .slice(0, 520) || "Попробуй маленький небанальный эксперимент на 10 минут.",
+      tags: ["gemini", "эксперимент"],
+      energy: 3,
+    };
   }
 }
 

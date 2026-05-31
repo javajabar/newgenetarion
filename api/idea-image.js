@@ -22,14 +22,6 @@ module.exports = async function handler(req, res) {
         },
         body: JSON.stringify({
           contents: [{ parts: [{ text: buildPrompt(body) }] }],
-          generationConfig: {
-            responseModalities: ["Image"],
-            responseFormat: {
-              image: {
-                aspectRatio: "16:9",
-              },
-            },
-          },
         }),
       }
     );
@@ -42,14 +34,17 @@ module.exports = async function handler(req, res) {
     }
 
     const data = await response.json();
-    const imagePart = data.candidates?.[0]?.content?.parts?.find((part) => part.inlineData);
+    const imagePart = data.candidates?.[0]?.content?.parts?.find(
+      (part) => part.inlineData || part.inline_data
+    );
+    const inlineData = imagePart?.inlineData || imagePart?.inline_data;
 
-    if (!imagePart?.inlineData?.data) {
+    if (!inlineData?.data) {
       return res.status(502).json({ error: "empty_image_response" });
     }
 
-    const mimeType = imagePart.inlineData.mimeType || "image/png";
-    return res.status(200).json({ image: `data:${mimeType};base64,${imagePart.inlineData.data}` });
+    const mimeType = inlineData.mimeType || inlineData.mime_type || "image/png";
+    return res.status(200).json({ image: `data:${mimeType};base64,${inlineData.data}` });
   } catch (error) {
     return res.status(500).json({ error: "image_generation_failed", message: error.message });
   }
