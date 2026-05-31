@@ -401,7 +401,7 @@ async function fetchIdeaImage(idea) {
   }
 
   if (!response.ok) {
-    throw new Error(`Idea image API error: ${response.status}`);
+    throw new Error(`Idea image API error: ${response.status} ${await readErrorBody(response)}`);
   }
 
   const data = await response.json();
@@ -518,7 +518,7 @@ async function fetchGeminiIdea(options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(`Idea API error: ${response.status}`);
+    throw new Error(`Idea API error: ${response.status} ${await readErrorBody(response)}`);
   }
 
   const data = await response.json();
@@ -539,6 +539,15 @@ function normalizeGeminiIdea(idea) {
     solo: state.solo,
     source: "gemini",
   };
+}
+
+async function readErrorBody(response) {
+  try {
+    const text = await response.text();
+    return text.slice(0, 300);
+  } catch {
+    return "";
+  }
 }
 
 function renderHistory() {

@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
       return res.status(502).json({ error: "empty_response" });
     }
 
-    return res.status(200).json({ idea: normalizeIdea(JSON.parse(rawText)) });
+    return res.status(200).json({ idea: normalizeIdea(parseIdeaJson(rawText)) });
   } catch (error) {
     return res.status(500).json({ error: "idea_generation_failed", message: error.message });
   }
@@ -92,6 +92,19 @@ function normalizeIdea(idea) {
     energy: Math.min(5, Math.max(1, Number(idea.energy) || 3)),
     source: "gemini",
   };
+}
+
+function parseIdeaJson(rawText) {
+  try {
+    return JSON.parse(rawText);
+  } catch {
+    const match = rawText.match(/\{[\s\S]*\}/);
+    if (!match) {
+      throw new Error(`Gemini returned non-JSON text: ${rawText.slice(0, 160)}`);
+    }
+
+    return JSON.parse(match[0]);
+  }
 }
 
 function list(value) {

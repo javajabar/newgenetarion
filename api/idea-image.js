@@ -1,4 +1,4 @@
-const imageModel = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-preview-05-20";
+const imageModel = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
 const apiKey = process.env.GEMINI_API_KEY;
 
 module.exports = async function handler(req, res) {
@@ -22,7 +22,14 @@ module.exports = async function handler(req, res) {
         },
         body: JSON.stringify({
           contents: [{ parts: [{ text: buildPrompt(body) }] }],
-          generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
+          generationConfig: {
+            responseModalities: ["Image"],
+            responseFormat: {
+              image: {
+                aspectRatio: "16:9",
+              },
+            },
+          },
         }),
       }
     );
