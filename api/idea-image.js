@@ -1,7 +1,7 @@
 const imageModel = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-preview-05-20";
 const apiKey = process.env.GEMINI_API_KEY;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "method_not_allowed" });
   }
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
   } catch (error) {
     return res.status(500).json({ error: "image_generation_failed", message: error.message });
   }
-}
+};
 
 function buildPrompt(body) {
   return `
@@ -55,12 +55,10 @@ Idea title: ${body.title || "Необычная идея"}
 Idea steps: ${body.text || ""}
 Tags: ${list(body.tags) || "curiosity, creative"}
 Mood: ${body.mood || "curious"}
-Visual direction:
 - warm minimal lifestyle photograph, not a poster
-- show objects or a small scene that clearly hints at the activity
-- no people faces, no readable text, no logos, no watermark
-- clean composition with soft daylight, cream background, sage/ochre/peach accents
-- landscape crop suitable for a website idea card
+- no faces, no text, no logos
+- cream background, sage/ochre/peach accents
+- landscape crop for a website card
 `;
 }
 
