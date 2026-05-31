@@ -174,9 +174,15 @@ let state = {
 };
 let currentIdea = null;
 let lastRejectedIdea = null;
-let imageRequestId = 0;
 const defaultIdeaImage = "assets/idea-visual.png";
-const ideaImageCache = new Map();
+const ideaImages = [
+  defaultIdeaImage,
+  "assets/idea-map.png",
+  "assets/idea-lab.png",
+  "assets/idea-city.png",
+  "assets/idea-video.png",
+];
+let imageRotationIndex = 0;
 
 const els = {
   ideaMeta: document.querySelector("#ideaMeta"),
@@ -349,64 +355,8 @@ function deriveTagsFromMeta(meta) {
 }
 
 async function updateIdeaImage(idea) {
-  const requestId = ++imageRequestId;
-  const cacheKey = `${idea.title}|${idea.text}`;
-
-  if (!state.useGemini) {
-    setIdeaImage(defaultIdeaImage, "");
-    return;
-  }
-
-  if (ideaImageCache.has(cacheKey)) {
-    setIdeaImage(ideaImageCache.get(cacheKey), idea.title);
-    return;
-  }
-
-  els.ideaVisual.classList.add("is-loading");
-
-  try {
-    const imageUrl = await fetchIdeaImage(idea);
-    if (requestId !== imageRequestId) return;
-    ideaImageCache.set(cacheKey, imageUrl);
-    setIdeaImage(imageUrl, idea.title);
-  } catch (error) {
-    console.warn(error);
-    if (requestId === imageRequestId) setIdeaImage(defaultIdeaImage, "");
-  } finally {
-    if (requestId === imageRequestId) els.ideaVisual.classList.remove("is-loading");
-  }
-}
-
-async function fetchIdeaImage(idea) {
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 15000);
-  let response;
-
-  try {
-    response = await fetch("/api/idea-image", {
-      method: "POST",
-      signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: idea.title,
-        text: idea.text,
-        tags: Array.isArray(idea.tags) ? idea.tags : ["идея"],
-        mood: state.mood,
-      }),
-    });
-  } finally {
-    window.clearTimeout(timeout);
-  }
-
-  if (!response.ok) {
-    throw new Error(`Idea image API error: ${response.status} ${await readErrorBody(response)}`);
-  }
-
-  const data = await response.json();
-  if (!data.image) throw new Error("Idea image API returned empty image");
-  return data.image;
+  imageRotationIndex = (imageRotationIndex + 1) % ideaImages.length;
+  setIdeaImage(ideaImages[imageRotationIndex], idea.title);
 }
 
 function setIdeaImage(src, alt) {
