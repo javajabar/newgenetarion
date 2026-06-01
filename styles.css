@@ -230,6 +230,8 @@ h1 {
   flex-direction: column;
   justify-content: center;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   padding: clamp(12px, 3vw, 40px) 0;
 }
 
@@ -258,10 +260,32 @@ h1 {
 
 .idea-copy p {
   max-width: 680px;
+  max-height: clamp(92px, 18svh, 210px);
   margin-bottom: 0;
+  padding-right: 8px;
   color: var(--muted);
   font-size: clamp(0.95rem, 1.45vw, 1.15rem);
   line-height: 1.55;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.idea-copy p::-webkit-scrollbar {
+  width: 8px;
+}
+
+.idea-copy p::-webkit-scrollbar-track {
+  background: rgba(222, 216, 202, 0.42);
+  border-radius: 999px;
+}
+
+.idea-copy p::-webkit-scrollbar-thumb {
+  background: rgba(22, 117, 111, 0.36);
+  border-radius: 999px;
+}
+
+.idea-copy p::-webkit-scrollbar-thumb:hover {
+  background: rgba(22, 117, 111, 0.56);
 }
 
 .idea-visual {
@@ -777,6 +801,7 @@ input[type="range"] {
   }
 
   .idea-copy p {
+    max-height: clamp(86px, 17svh, 145px);
     font-size: 0.86rem;
     line-height: 1.45;
   }
