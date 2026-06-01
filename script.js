@@ -519,7 +519,7 @@ function normalizeGeminiIdea(idea) {
     moods: [state.mood],
     energy: Math.min(5, Math.max(1, Number(idea.energy) || Number(state.energy) || 3)),
     solo: state.solo,
-    source: "gemini",
+    source: idea.source || "gemini",
   };
 }
 

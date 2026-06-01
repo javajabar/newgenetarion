@@ -18,33 +18,6 @@ module.exports = async function handler(req, res) {
         temperature: 1.05,
         topP: 0.92,
         maxOutputTokens: 420,
-        responseMimeType: "application/json",
-        responseJsonSchema: {
-          type: "object",
-          properties: {
-            title: {
-              type: "string",
-              description: "Короткое небанальное название идеи на русском языке.",
-            },
-            text: {
-              type: "string",
-              description: "2-3 предложения с конкретными шагами выполнения идеи.",
-            },
-            tags: {
-              type: "array",
-              items: { type: "string" },
-              minItems: 2,
-              maxItems: 3,
-            },
-            energy: {
-              type: "integer",
-              minimum: 1,
-              maximum: 5,
-            },
-          },
-          required: ["title", "text", "tags", "energy"],
-          propertyOrdering: ["title", "text", "tags", "energy"],
-        },
       },
     };
 
@@ -110,7 +83,16 @@ function buildPrompt(body) {
 - без дорогих покупок;
 - не используй названия полей внутри текста идеи;
 - title должен быть готовым названием, не ключом JSON;
-- text должен быть нормальным человеческим описанием, не фрагментом JSON.
+- text должен быть нормальным человеческим описанием, не фрагментом JSON;
+- верни только JSON, без markdown и без пояснений.
+
+Формат ответа:
+{
+  "title": "короткое название до 55 символов",
+  "text": "2-3 предложения с конкретными шагами",
+  "tags": ["тег", "тег", "тег"],
+  "energy": 3
+}
 `;
 }
 
