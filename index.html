@@ -39,6 +39,7 @@
           <button class="primary-button" id="generateBtn" type="button">Дай идею</button>
           <button class="secondary-button" id="skipBtn" type="button">Не нравится, другую</button>
           <button class="ghost-button" id="shareBtn" type="button">Поделиться</button>
+          <button class="ghost-button" id="historyToggle" type="button">История</button>
         </div>
 
         <div class="feedback-panel" id="feedbackPanel" hidden>
@@ -50,16 +51,9 @@
           <button type="button" data-feedback="different">совсем другое</button>
         </div>
 
-        <section class="history-panel" aria-labelledby="historyTitle">
-          <div class="section-heading">
-            <h2 id="historyTitle">История</h2>
-            <button class="text-button" id="clearHistoryBtn" type="button">Очистить</button>
-          </div>
-          <div class="history-list" id="historyList"></div>
-        </section>
       </section>
 
-      <div class="settings-backdrop" id="settingsBackdrop" hidden></div>
+      <div class="modal-backdrop" id="modalBackdrop" hidden></div>
       <aside class="settings-panel" id="settingsPanel" aria-label="Настройки генератора" aria-modal="true">
         <div class="panel-head">
           <div>
@@ -114,6 +108,20 @@
 
           <button class="primary-button full" type="submit">Сохранить</button>
         </form>
+      </aside>
+
+      <aside class="history-panel" id="historyPanel" aria-labelledby="historyTitle" aria-modal="true">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Архив</p>
+            <h2 id="historyTitle">История</h2>
+          </div>
+          <button class="icon-button close-history" id="closeHistory" type="button" aria-label="Закрыть историю">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+        <button class="ghost-button full" id="clearHistoryBtn" type="button">Очистить историю</button>
       </aside>
 
       <section class="onboarding" id="onboarding" aria-labelledby="onboardingTitle">

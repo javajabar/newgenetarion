@@ -193,11 +193,14 @@ const els = {
   generateBtn: document.querySelector("#generateBtn"),
   skipBtn: document.querySelector("#skipBtn"),
   shareBtn: document.querySelector("#shareBtn"),
+  historyToggle: document.querySelector("#historyToggle"),
   feedbackPanel: document.querySelector("#feedbackPanel"),
   settingsToggle: document.querySelector("#settingsToggle"),
   closeSettings: document.querySelector("#closeSettings"),
-  settingsBackdrop: document.querySelector("#settingsBackdrop"),
+  modalBackdrop: document.querySelector("#modalBackdrop"),
   settingsPanel: document.querySelector("#settingsPanel"),
+  historyPanel: document.querySelector("#historyPanel"),
+  closeHistory: document.querySelector("#closeHistory"),
   settingsForm: document.querySelector("#settingsForm"),
   interestChips: document.querySelector("#interestChips"),
   onboarding: document.querySelector("#onboarding"),
@@ -390,13 +393,38 @@ function addRipple(event) {
 }
 
 function openSettings() {
-  if (els.settingsBackdrop) els.settingsBackdrop.hidden = false;
+  closeHistoryMenu();
+  if (els.modalBackdrop) els.modalBackdrop.hidden = false;
   els.settingsPanel?.classList.add("is-open");
 }
 
 function closeSettingsMenu() {
   els.settingsPanel?.classList.remove("is-open");
-  if (els.settingsBackdrop) els.settingsBackdrop.hidden = true;
+  hideBackdropIfNoModal();
+}
+
+function openHistoryMenu() {
+  closeSettingsMenu();
+  renderHistory();
+  if (els.modalBackdrop) els.modalBackdrop.hidden = false;
+  els.historyPanel?.classList.add("is-open");
+}
+
+function closeHistoryMenu() {
+  els.historyPanel?.classList.remove("is-open");
+  hideBackdropIfNoModal();
+}
+
+function closeAllMenus() {
+  els.settingsPanel?.classList.remove("is-open");
+  els.historyPanel?.classList.remove("is-open");
+  if (els.modalBackdrop) els.modalBackdrop.hidden = true;
+}
+
+function hideBackdropIfNoModal() {
+  const hasOpenModal =
+    els.settingsPanel?.classList.contains("is-open") || els.historyPanel?.classList.contains("is-open");
+  if (!hasOpenModal && els.modalBackdrop) els.modalBackdrop.hidden = true;
 }
 
 async function generateIdea() {
@@ -516,7 +544,10 @@ function renderHistory() {
     article.innerHTML = `<strong></strong><p></p>`;
     article.querySelector("strong").textContent = item.title;
     article.querySelector("p").textContent = item.text;
-    article.addEventListener("click", () => showIdea(item, false));
+    article.addEventListener("click", () => {
+      showIdea(item, false);
+      closeHistoryMenu();
+    });
     els.historyList.append(article);
   });
 }
@@ -619,6 +650,7 @@ function init() {
     applyFeedback(button.dataset.feedback);
   });
   on(els.shareBtn, "click", shareIdea);
+  on(els.historyToggle, "click", openHistoryMenu);
   on(els.clearHistoryBtn, "click", () => {
     state.history = [];
     saveState();
@@ -628,9 +660,10 @@ function init() {
 
   on(els.settingsToggle, "click", openSettings);
   on(els.closeSettings, "click", closeSettingsMenu);
-  on(els.settingsBackdrop, "click", closeSettingsMenu);
+  on(els.closeHistory, "click", closeHistoryMenu);
+  on(els.modalBackdrop, "click", closeAllMenus);
   on(document, "keydown", (event) => {
-    if (event.key === "Escape") closeSettingsMenu();
+    if (event.key === "Escape") closeAllMenus();
   });
 
   on(els.settingsForm, "submit", (event) => {

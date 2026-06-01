@@ -84,10 +84,16 @@ function buildPrompt(body) {
 
 function normalizeIdea(idea) {
   const tags = Array.isArray(idea.tags) && idea.tags.length > 0 ? idea.tags : ["gemini", "идея"];
+  const title = cleanText(idea.title);
+  const text = cleanText(idea.text);
+
+  if (!isUsableIdea(title, text)) {
+    return fallbackIdea();
+  }
 
   return {
-    title: String(idea.title || "Необычная идея").slice(0, 80),
-    text: String(idea.text || "Попробуй маленький эксперимент.").slice(0, 520),
+    title: title.slice(0, 80),
+    text: text.slice(0, 520),
     tags: tags.map((tag) => String(tag).toLowerCase()).slice(0, 3),
     energy: Math.min(5, Math.max(1, Number(idea.energy) || 3)),
     source: "gemini",
@@ -108,16 +114,39 @@ function parseIdeaJson(rawText) {
     }
 
     return {
-      title: "Идея от Gemini",
-      text: rawText
-        .replace(/```json|```/g, "")
-        .replace(/[{}"]/g, "")
-        .trim()
-        .slice(0, 520) || "Попробуй маленький небанальный эксперимент на 10 минут.",
-      tags: ["gemini", "эксперимент"],
-      energy: 3,
+      ...fallbackIdea(),
+      source: "gemini",
     };
   }
+}
+
+function cleanText(value) {
+  return String(value || "")
+    .replace(/```json|```/g, "")
+    .replace(/^[\s"'{}[\],:]+|[\s"'{}[\],:]+$/g, "")
+    .trim();
+}
+
+function isUsableIdea(title, text) {
+  const badPattern = /^(title|text|tags|energy)\s*[:=]/i;
+  return (
+    title.length >= 8 &&
+    text.length >= 35 &&
+    !badPattern.test(title) &&
+    !badPattern.test(text) &&
+    !text.includes('","') &&
+    !text.includes('":')
+  );
+}
+
+function fallbackIdea() {
+  return {
+    title: "Сделай мини-квест вокруг себя",
+    text: "Выбери три случайных предмета рядом и придумай для каждого роль в маленькой миссии. За 10 минут собери из них сцену, фото или короткое описание, будто это начало игры.",
+    tags: ["эксперимент", "игра", "творчество"],
+    energy: 3,
+    source: "gemini",
+  };
 }
 
 function list(value) {
