@@ -26,7 +26,37 @@ module.exports = async function handler(req, res) {
             temperature: 1.05,
             topP: 0.92,
             maxOutputTokens: 420,
-            responseMimeType: "application/json",
+            responseFormat: {
+              text: {
+                mimeType: "application/json",
+                schema: {
+                  type: "object",
+                  properties: {
+                    title: {
+                      type: "string",
+                      description: "Короткое небанальное название идеи на русском языке.",
+                    },
+                    text: {
+                      type: "string",
+                      description: "2-3 предложения с конкретными шагами выполнения идеи.",
+                    },
+                    tags: {
+                      type: "array",
+                      items: { type: "string" },
+                      minItems: 2,
+                      maxItems: 3,
+                    },
+                    energy: {
+                      type: "integer",
+                      minimum: 1,
+                      maximum: 5,
+                    },
+                  },
+                  required: ["title", "text", "tags", "energy"],
+                  propertyOrdering: ["title", "text", "tags", "energy"],
+                },
+              },
+            },
           },
         }),
       }
@@ -75,10 +105,9 @@ function buildPrompt(body) {
 - не предлагай банальности без необычного задания;
 - идея должна быть маленьким экспериментом, челленджем, сценарием или игрой;
 - без дорогих покупок;
-- ответ строго JSON без markdown.
-
-Формат:
-{"title":"до 55 символов","text":"2-3 предложения с шагами","tags":["один","два","три"],"energy":1}
+- не используй названия полей внутри текста идеи;
+- title должен быть готовым названием, не ключом JSON;
+- text должен быть нормальным человеческим описанием, не фрагментом JSON.
 `;
 }
 
@@ -115,7 +144,6 @@ function parseIdeaJson(rawText) {
 
     return {
       ...fallbackIdea(),
-      source: "gemini",
     };
   }
 }
@@ -145,7 +173,7 @@ function fallbackIdea() {
     text: "Выбери три случайных предмета рядом и придумай для каждого роль в маленькой миссии. За 10 минут собери из них сцену, фото или короткое описание, будто это начало игры.",
     tags: ["эксперимент", "игра", "творчество"],
     energy: 3,
-    source: "gemini",
+    source: "fallback",
   };
 }
 
