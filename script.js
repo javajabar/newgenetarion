@@ -471,6 +471,19 @@ async function fetchGeminiIdea(options = {}) {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 9000);
   let response;
+  const requestBody = {
+    interests: state.interests,
+    time: state.time,
+    mood: state.mood,
+    energy: state.energy,
+    solo: state.solo,
+    history: state.history.slice(0, 8).map((item) => item.title),
+    disliked: state.disliked.slice(-10),
+    excludeTitles: options.excludeTitles || [],
+    avoidCurrentTags: Boolean(options.avoidCurrentTags),
+  };
+
+  console.log("[Idea API request]", requestBody);
 
   try {
     response = await fetch("/api/idea", {
@@ -479,17 +492,7 @@ async function fetchGeminiIdea(options = {}) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        interests: state.interests,
-        time: state.time,
-        mood: state.mood,
-        energy: state.energy,
-        solo: state.solo,
-        history: state.history.slice(0, 8).map((item) => item.title),
-        disliked: state.disliked.slice(-10),
-        excludeTitles: options.excludeTitles || [],
-        avoidCurrentTags: Boolean(options.avoidCurrentTags),
-      }),
+      body: JSON.stringify(requestBody),
     });
   } finally {
     window.clearTimeout(timeout);
@@ -500,6 +503,7 @@ async function fetchGeminiIdea(options = {}) {
   }
 
   const data = await response.json();
+  console.log("[Idea API response]", data);
   if (!data.idea) throw new Error("Idea API returned empty idea");
   return normalizeGeminiIdea(data.idea);
 }

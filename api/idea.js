@@ -12,6 +12,44 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
+    const geminiPayload = {
+      contents: [{ parts: [{ text: buildPrompt(body) }] }],
+      generationConfig: {
+        temperature: 1.05,
+        topP: 0.92,
+        maxOutputTokens: 420,
+        responseMimeType: "application/json",
+        responseJsonSchema: {
+          type: "object",
+          properties: {
+            title: {
+              type: "string",
+              description: "Короткое небанальное название идеи на русском языке.",
+            },
+            text: {
+              type: "string",
+              description: "2-3 предложения с конкретными шагами выполнения идеи.",
+            },
+            tags: {
+              type: "array",
+              items: { type: "string" },
+              minItems: 2,
+              maxItems: 3,
+            },
+            energy: {
+              type: "integer",
+              minimum: 1,
+              maximum: 5,
+            },
+          },
+          required: ["title", "text", "tags", "energy"],
+          propertyOrdering: ["title", "text", "tags", "energy"],
+        },
+      },
+    };
+
+    console.log("[Gemini request]", JSON.stringify({ model, body, payload: geminiPayload }, null, 2));
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
@@ -20,53 +58,22 @@ module.exports = async function handler(req, res) {
           "Content-Type": "application/json",
           "x-goog-api-key": apiKey,
         },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: buildPrompt(body) }] }],
-          generationConfig: {
-            temperature: 1.05,
-            topP: 0.92,
-            maxOutputTokens: 420,
-            responseMimeType: "application/json",
-            responseJsonSchema: {
-              type: "object",
-              properties: {
-                title: {
-                  type: "string",
-                  description: "Короткое небанальное название идеи на русском языке.",
-                },
-                text: {
-                  type: "string",
-                  description: "2-3 предложения с конкретными шагами выполнения идеи.",
-                },
-                tags: {
-                  type: "array",
-                  items: { type: "string" },
-                  minItems: 2,
-                  maxItems: 3,
-                },
-                energy: {
-                  type: "integer",
-                  minimum: 1,
-                  maximum: 5,
-                },
-              },
-              required: ["title", "text", "tags", "energy"],
-              propertyOrdering: ["title", "text", "tags", "energy"],
-            },
-          },
-        }),
+        body: JSON.stringify(geminiPayload),
       }
     );
 
     if (!response.ok) {
       const text = await response.text();
+      console.error("[Gemini error]", response.status, text);
       return res
         .status(response.status)
         .json({ error: "gemini_error", message: text.slice(0, 500) });
     }
 
     const data = await response.json();
+    console.log("[Gemini response]", JSON.stringify(data, null, 2));
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    console.log("[Gemini raw text]", rawText);
 
     if (!rawText) {
       return res.status(502).json({ error: "empty_response" });
