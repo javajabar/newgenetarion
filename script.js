@@ -502,7 +502,9 @@ async function fetchGeminiIdea(options = {}) {
     throw new Error(`Idea API error: ${response.status} ${await readErrorBody(response)}`);
   }
 
-  const data = await response.json();
+  const responseText = await response.text();
+  console.log("[Idea API raw text]", responseText);
+  const data = JSON.parse(responseText);
   console.log("[Idea API response]", data);
   if (!data.idea) throw new Error("Idea API returned empty idea");
   return normalizeGeminiIdea(data.idea);
