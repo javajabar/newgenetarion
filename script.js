@@ -468,9 +468,6 @@ async function getIdea(options = {}) {
 }
 
 async function fetchGeminiIdea(options = {}) {
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 9000);
-  let response;
   const requestBody = {
     interests: state.interests,
     time: state.time,
@@ -485,18 +482,13 @@ async function fetchGeminiIdea(options = {}) {
 
   console.log("[Idea API request]", requestBody);
 
-  try {
-    response = await fetch("/api/idea", {
-      method: "POST",
-      signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-    });
-  } finally {
-    window.clearTimeout(timeout);
-  }
+  const response = await fetch("/api/idea", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody),
+  });
 
   if (!response.ok) {
     throw new Error(`Idea API error: ${response.status} ${await readErrorBody(response)}`);

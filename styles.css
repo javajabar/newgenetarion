@@ -755,7 +755,7 @@ input[type="range"] {
 
   .idea-stage {
     align-content: start;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     gap: 12px;
     grid-template-rows: auto auto;
     padding: 10px;
@@ -777,12 +777,8 @@ input[type="range"] {
   }
 
   .idea-copy p {
-    display: -webkit-box;
-    overflow: hidden;
     font-size: 0.86rem;
     line-height: 1.45;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 5;
   }
 
   .idea-visual {
@@ -794,6 +790,10 @@ input[type="range"] {
     min-height: 42px;
     padding: 0 10px;
     font-size: 0.8rem;
+  }
+
+  .actions {
+    margin-top: auto;
   }
 
   .history-list {
