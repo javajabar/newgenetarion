@@ -754,11 +754,15 @@ input[type="range"] {
   }
 
   .idea-stage {
+    align-content: start;
+    flex: 1 1 auto;
     gap: 12px;
+    grid-template-rows: auto auto;
     padding: 10px;
   }
 
   .idea-copy {
+    justify-content: flex-start;
     padding: 0;
   }
 
@@ -778,11 +782,11 @@ input[type="range"] {
     font-size: 0.86rem;
     line-height: 1.45;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 5;
   }
 
   .idea-visual {
-    height: clamp(150px, 26svh, 210px);
+    height: clamp(130px, 23svh, 185px);
   }
 
   .actions > button {
