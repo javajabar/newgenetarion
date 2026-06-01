@@ -26,36 +26,32 @@ module.exports = async function handler(req, res) {
             temperature: 1.05,
             topP: 0.92,
             maxOutputTokens: 420,
-            responseFormat: {
-              text: {
-                mimeType: "application/json",
-                schema: {
-                  type: "object",
-                  properties: {
-                    title: {
-                      type: "string",
-                      description: "Короткое небанальное название идеи на русском языке.",
-                    },
-                    text: {
-                      type: "string",
-                      description: "2-3 предложения с конкретными шагами выполнения идеи.",
-                    },
-                    tags: {
-                      type: "array",
-                      items: { type: "string" },
-                      minItems: 2,
-                      maxItems: 3,
-                    },
-                    energy: {
-                      type: "integer",
-                      minimum: 1,
-                      maximum: 5,
-                    },
-                  },
-                  required: ["title", "text", "tags", "energy"],
-                  propertyOrdering: ["title", "text", "tags", "energy"],
+            responseMimeType: "application/json",
+            responseJsonSchema: {
+              type: "object",
+              properties: {
+                title: {
+                  type: "string",
+                  description: "Короткое небанальное название идеи на русском языке.",
+                },
+                text: {
+                  type: "string",
+                  description: "2-3 предложения с конкретными шагами выполнения идеи.",
+                },
+                tags: {
+                  type: "array",
+                  items: { type: "string" },
+                  minItems: 2,
+                  maxItems: 3,
+                },
+                energy: {
+                  type: "integer",
+                  minimum: 1,
+                  maximum: 5,
                 },
               },
+              required: ["title", "text", "tags", "energy"],
+              propertyOrdering: ["title", "text", "tags", "energy"],
             },
           },
         }),
